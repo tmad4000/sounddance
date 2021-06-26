@@ -1,0 +1,151 @@
+
+
+<!-- 
+    https://www.wolframcloud.com/env/tmad4000/SoundPlay.nb
+    https://marcgg.com/blog/2016/11/01/javascript-audio/
+
+
+    https://developer.mozilla.org/en-US/docs/Web/API/AudioBuffer
+
+  -->
+
+
+<head>
+<style>
+
+</style>
+</head>
+
+<body>
+
+<div id="field" style="position:absolute; margin-left: 100px;">
+  <div id="myWeight" style="position: absolute; top:50px;left:0px;background:  red ; height: 50px;width: 50px">asdf</div>
+</div>
+<button onclick="doAudio()">Play</button>
+<script>
+
+
+function normalized(ray) {
+  let max = ray[0]
+  for(let i=0;i<ray.length;i++) {
+    if(ray[i]>max) 
+      max=ray[i]
+  } 
+
+  return ray.map(e=>e/max)
+}
+
+let t=0
+let weightDisps=[]
+let intvl=null
+
+function moveObj() {
+  if(t<weightDisps.length) {
+    document.getElementById("myWeight").style.left=weightDisps[t]
+    console.log(weightDisps[t])
+    
+  }
+  else {
+    clearInterval(intvl)
+
+  }
+
+  t++
+    
+}
+
+
+frequencyBuckets=Array(10)
+pendLengths=[100,200,300,400,500,600,700,800,900,1000]
+
+//f = -kx
+
+let k = .1
+let weightDisp=0
+let doneBefore=false
+
+
+function doAudio() {
+
+var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+// Create an empty three-second stereo buffer at the sample rate of the AudioContext
+var myArrayBuffer = audioCtx.createBuffer(2, audioCtx.sampleRate * 3, audioCtx.sampleRate);
+
+
+
+// Fill the buffer with white noise;
+// just random values between -1.0 and 1.0
+for (var channel = 0; channel < myArrayBuffer.numberOfChannels; channel++) {
+  // This gives us the actual array that contains the data
+  var nowBuffering = myArrayBuffer.getChannelData(channel);
+  for (var i = 0; i < myArrayBuffer.length; i++) {
+    // Math.random() is in [0; 1.0]
+    // audio needs to be in [-1.0; 1.0]
+    // nowBuffering[i] = i%15000 > 100 ? 0: (Math.sin(i/100) * 2 - 1);
+
+    nowBuffering[i] = i%15000 > 3000 ? 0: (Math.sin((i%15000)/22) * 2 - 1);
+    // nowBuffering[i] += i/2%15000 > 3000 ? 0: (Math.sin((i/2%15000)/44) * 2 - 1);
+    
+
+    if(isNaN(nowBuffering[i]) || isNaN(weightDisp)) {
+      // debugger
+      // weightDisp= weightDisps[i]
+      // weightDisps[i]=weightDisp
+    }
+    else {
+      weightDisp+=nowBuffering[i] - k*weightDisp
+      weightDisps[i]=weightDisp
+
+      if(doneBefore)
+        debugger
+    }
+
+    // nowBuffering[i] = Math.sin((i/22) * 2 - 1);
+    // nowBuffering[i] += Math.sin((i/44) * 2 - 1);
+    // nowBuffering[i] += Math.sin((i/88) * 2 - 1);
+    // nowBuffering[i] += Math.sin((i/172) * 2 - 1);
+
+
+    // nowBuffering[i] += (i/2)%15000 > 400 ? 0: (Math.sin((i/2%15000)/300) * 2 - 1);
+
+
+    //#tt make dancing guy
+
+
+
+  }
+
+  nowBuffering=normalized(nowBuffering)  
+  doneBefore=true
+  // console.log(weightDisps)
+  // debugger
+  
+
+}
+
+// Get an AudioBufferSourceNode.
+// This is the AudioNode to use when we want to play an AudioBuffer
+var source = audioCtx.createBufferSource();
+
+// set the buffer in the AudioBufferSourceNode
+source.buffer = myArrayBuffer;
+
+// connect the AudioBufferSourceNode to the
+// destination so we can hear the sound
+source.connect(audioCtx.destination);
+
+// start the source playing
+source.start();
+
+intvl=setInterval(moveObj,20)
+
+}
+</script>
+
+
+</body>
+
+
+
+</html>

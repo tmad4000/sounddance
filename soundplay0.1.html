@@ -1,0 +1,307 @@
+
+
+<!-- 
+    https://www.wolframcloud.com/env/tmad4000/SoundPlay.nb
+-->
+
+
+<head>
+<style>
+
+</style>
+</head>
+
+<body>
+
+<div id="field">
+
+</div>
+
+<input type="range" min="1" max="180" value="90" class="slider" id="myRange"> 
+<button onclick="tick()">Tick</button>
+<button onclick="(()=>{ for(let i=0;i<10;i++) tick() })()">Tick10</button>
+<button onclick="(()=>{ for(let i=0;i<20;i++) doForces(); render()})()">DoForces</button>
+<br>
+<canvas id="myCanvas" width="300" height="600" style="border:1px solid #d3d3d3;">
+    Your browser does not support the HTML5 canvas tag.</canvas>
+    
+    
+</body>
+
+<script>
+
+
+balance
+
+
+agent --> 
+
+space 
+
+listen mic 
+
+
+watch camera 
+
+whatShallIDo
+    --> language
+
+
+the tao can burst through
+
+compassion / psychic quality to the computer 
+
+
+--> 
+
+listen 
+    -> sing harmony 
+
+
+inventory: what can i do; inventio
+
+
+look around 
+
+
+whates energy that drive to look? 
+
+
+sensing becomes doing?
+
+
+second order cybernetics?
+
+
+dances to ambient music?
+
+listenSound()  => [432,4,324,2,543,54]
+gaborFilter(1) gaborFilter(2) gaborFilter(3) gaborFilter(4)
+
+for(i in gaborFilters) {
+    if(gaborFilters[i] > 10) {
+        connect(4goLeft)
+connectToRest(goRight)
+        
+    }
+}
+extractBeat 
+
+connectToUpbeat(goLeft)
+connectToRest(goRight)
+
+goLeft
+
+
+
+    // let fib =[1,1]
+    // for(let i=1;i<20;i++) {
+    //     fib.push(fib[i]+fib[i-1])
+    // }
+
+    // let dir=[1,0]
+
+    let cells=[[50,50,20]]
+
+    function square(x) {
+        return x*x
+    }
+
+    //indexes
+    function cellDist(c1,c2) {
+        return Math.sqrt( 
+            square(cells[c1][0]-cells[c2][0]) +
+            square(cells[c1][1]-cells[c2][1])
+        )
+    }
+
+    //indexes
+    function cellDiff(c1,c2) {
+        return [cells[c2][0]-cells[c1][0], cells[c2][1]-cells[c1][1]]
+        
+    }
+
+    function mag(v) {
+        return Math.sqrt(square(v[0]+square(v[1])))
+    }
+    function normalize(v) {
+        return v.map(e=>e/mag(v))
+    }
+
+
+    let regions={}
+    function xyToRegion(x,y) {
+        const REGION_SIZE=60
+        return [Math.floor(x/REGION_SIZE),Math.floor(y/REGION_SIZE)]
+    }
+    function idxToRegion(i) {
+        return xyToRegion(cells[i][0],cells[i][1])
+    }
+
+    function reindex() {
+        for(let i=0;i<cells.length;i++) {
+            if(! (idxToRegion(i) in regions))
+                regions[idxToRegion(i)]=[]
+            
+            regions[idxToRegion(i)].push(i)
+        }
+
+    }
+    reindex()
+ 
+    function doForces() {
+        for(let i=0;i<cells.length;i++) {
+            //process forces
+            let cellforcev=[0,0]
+
+            if(! ( idxToRegion(i) in regions))
+                reindex()
+
+            for(let j of regions[idxToRegion(i)]) {
+            // for(let j=0;j<cells.length;j++) {
+                if(j==i)
+                    continue
+
+                let idealDist=cells[i][2]+cells[j][2]
+                if(cellDist(i,j)<idealDist) {
+                    // let diff2d=cellDiff(i,j) 
+                    
+                    let fmag = idealDist-cellDist(i,j)
+                    // debugger
+
+                    cellforcev=normalize(cellDiff(i,j)).map( e=>e*fmag)
+                }
+
+            }
+            cells[i][0]-=cellforcev[0]
+            cells[i][1]-=cellforcev[1]
+        }
+    }
+
+    function tick() {
+        const origLen=cells.length
+        let div = false
+        doForces()
+
+        //    if(i%20==0) reindex()
+        //
+        for(let i=0;i<origLen;i++) {
+            //process forces
+
+
+            //divide
+            if(cells[i][2]>30) {
+                div=true
+                let newCell=cells[i].slice()
+                newCell[2]=newCell[2]/2
+                newCell[0]=newCell[0]+newCell[2]*2
+
+                newCell[1]+=(Math.random()-1)
+
+                cells.push(newCell)
+
+                cells[i][2]=cells[i][2]/2
+            }
+
+            //grow
+            else {
+                cells[i][2]+=5
+            }
+
+
+        }
+
+        if(div)
+            reindex()
+
+
+        render()
+
+    }
+
+    // let THETA=90*Math.PI/180
+
+    // var slider = document.getElementById("myRange");
+
+    // slider.oninput = function() {
+    //     THETA=this.value*Math.PI/180;
+    //     console.log(THETA)
+    //     render()
+    // }
+
+    const SCALE=1
+
+    function render()  {
+
+        var c = document.getElementById("myCanvas");
+        var ctx = c.getContext("2d");
+        ctx.clearRect(0, 0, c.width, c.height);
+
+        for(let i=0;i<cells.length;i++) {
+            ctx.beginPath();
+            ctx.arc(cells[i][0], cells[i][1], cells[i][2], 0, 2 * Math.PI);
+            ctx.stroke()
+
+        }
+
+        // ctx.beginPath();
+
+        // let ptx=200,pty=300
+        // ctx.moveTo(ptx, pty);
+
+        
+        //     for(let i=0;i<fib.length;i++) {
+        //         ptx+=dir[0]*SCALE*fib[i]
+        //         pty+=dir[1]*SCALE*fib[i]
+        //         ctx.lineTo(ptx, pty);
+        //         ctx.stroke();    
+                
+
+        //         /*
+        //         cos -sin
+        //         sin cos
+        //         */
+        //         // debugger
+        //         dir=[Math.cos(THETA)*dir[0]-Math.sin(THETA)*dir[1],Math.sin(THETA)*dir[0]+Math.cos(THETA)*dir[1]]
+
+        //         // if(dir[0])
+        //         //     dir=[0,dir[0]]
+        //         // else if(dir[1])
+        //         //     dir=[-1*dir[1],0]
+        //     }
+    }
+
+    render()
+    // ctx.lineTo(300, 150);
+    // ctx.stroke();
+    </script>
+
+
+<script>
+//start with a blank canvas and just make! #best
+
+//summer
+// row1=[1,1,1]
+// row2=[1,1,1,1]
+
+// document.write(...row1,"<br>")
+// document.write(...row2,"<br>")
+
+// function next() {
+//     let n=row1.length+row2.length
+//     row1=row2
+//     row2=Array(n).fill("1")
+
+//     let ratio=row2.length/row1.length
+//     document.body.innerHTML+= `${row2.join("")}<br>`
+//     // document.body.innerHTML+= `${ratio} | ${row2.join("")}<br>`
+
+// }
+// document.write(`<button onclick="next()">Next</button>`,"<br>")
+
+
+
+
+
+
+</script>
